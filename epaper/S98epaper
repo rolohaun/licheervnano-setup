@@ -1,0 +1,18 @@
+#!/bin/sh
+# Update the Waveshare e-Paper display with device stats on boot.
+# The display is put to sleep after update — it holds the image with zero power.
+
+SCRIPT="/opt/epaper/demo.py"
+LOGFILE="/var/log/epaper.log"
+
+start() {
+    echo "Updating e-Paper display..."
+    cd /opt/epaper && python3 "$SCRIPT" > "$LOGFILE" 2>&1 &
+}
+
+case "$1" in
+    start)   start ;;
+    stop)    ;;   # nothing to stop; display holds image passively
+    restart) start ;;
+    *)       echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac

@@ -151,7 +151,6 @@ def build_html():
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="60">
   <title>{os_info['hostname']} — Stats</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -168,11 +167,27 @@ def build_html():
       color: #fff;
       margin-bottom: 4px;
     }}
+    .header-row {{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }}
     .subtitle {{
       font-size: 0.8rem;
       color: #666;
-      margin-bottom: 24px;
+      flex: 1;
     }}
+    .btn-refresh {{
+      background: #2a2d3a;
+      color: #e0e0e0;
+      border: 1px solid #3a3d4a;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }}
+    .btn-refresh:hover {{ background: #3a3d4a; }}
     .grid {{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -241,7 +256,10 @@ def build_html():
 </head>
 <body>
   <h1>&#127762; {os_info['hostname']}</h1>
-  <p class="subtitle">LicheeRV Nano &mdash; refreshes every 60s</p>
+  <div class="header-row">
+    <p class="subtitle">LicheeRV Nano</p>
+    <button class="btn-refresh" onclick="window.location.reload()">&#8635; Refresh Stats</button>
+  </div>
 
   <div class="grid">
 
@@ -294,7 +312,7 @@ def build_html():
 
   </div>
 
-  <p class="refresh-note">Auto-refreshing every 60 seconds</p>
+  <p class="refresh-note">Use the Refresh Stats button to update.</p>
 </body>
 </html>"""
 

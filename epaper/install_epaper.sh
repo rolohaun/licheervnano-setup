@@ -11,7 +11,11 @@ cp "$REPO_DIR/epaper/epd4in2_V2.py" "$DEST/"
 cp "$REPO_DIR/epaper/demo.py"        "$DEST/"
 chmod +x "$DEST/demo.py"
 
+cp "$REPO_DIR/epaper/S98epaper" /etc/init.d/S98epaper
+chmod +x /etc/init.d/S98epaper
+
 echo "Installed to $DEST"
+echo "Boot service installed: /etc/init.d/S98epaper"
 echo ""
 echo "Wiring (all 3.3V):"
 echo "  E-Paper VCC  -> 3V3         (right side, bottom pin)"
