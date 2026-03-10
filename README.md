@@ -38,7 +38,7 @@ A lightweight Python3 HTTP server that displays live device stats at `http://<de
 - Memory usage (used / free / total)
 - Disk usage ( / )
 
-Auto-refreshes every 3 seconds.
+Auto-refreshes every 60 seconds.
 
 ### Manual install
 
@@ -49,6 +49,17 @@ cp server/S99statsserver /etc/init.d/
 chmod +x /etc/init.d/S99statsserver
 /etc/init.d/S99statsserver start
 ```
+
+## Swap / Memory
+
+The LicheeRV Nano has 256MB RAM, but 128MB is reserved for the MIPI-CSI camera and display subsystems, leaving only ~128MB usable. Adding swap extends the available virtual memory significantly.
+
+```sh
+sh install_swap.sh        # creates a 512M swapfile (default)
+sh install_swap.sh 1G     # or specify a larger size
+```
+
+This creates `/swapfile`, enables it immediately, and adds it to `/etc/fstab` so it persists across reboots.
 
 ## Notes
 
