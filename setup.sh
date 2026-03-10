@@ -49,19 +49,68 @@ if [ -z "$IP" ]; then
     exit 1
 fi
 
-# ── Git ───────────────────────────────────────────────────────────────────────
+# ── Git (via Python3 HTTP clone) ─────────────────────────────────────────────
 
-echo "[3/3] Installing git..."
-cd /tmp
-curl -sL 'https://dl-cdn.alpinelinux.org/alpine/edge/main/riscv64/git-2.53.0-r0.apk' -o git.apk
-mkdir -p /tmp/git_extract
-gzip -d < git.apk | tar x -C /tmp/git_extract 2>/dev/null || true
-cp /tmp/git_extract/usr/bin/git* /usr/bin/
-cp -r /tmp/git_extract/usr/lib/git-core /usr/lib/
-cp -r /tmp/git_extract/usr/share/git-core /usr/share/ 2>/dev/null || true
-rm -rf /tmp/git.apk /tmp/git_extract
+echo "[3/3] Installing git-over-python helper (mgit)..."
+cat > /usr/bin/mgit << 'PYEOF'
+#!/usr/bin/env python3
+"""Minimal git clone/pull using GitHub tarball API. Usage: mgit clone <url> [dir]"""
+import sys, os, tarfile, urllib.request, shutil, subprocess
 
-git --version && echo "git installed successfully."
+def gh_tarball_url(url):
+    # Convert https://github.com/owner/repo[.git] to tarball API URL
+    url = url.rstrip("/").removesuffix(".git")
+    parts = url.rstrip("/").split("/")
+    owner, repo = parts[-2], parts[-1]
+    return f"https://api.github.com/repos/{owner}/{repo}/tarball/main", repo
+
+def clone(url, dest=None):
+    api_url, repo = gh_tarball_url(url)
+    dest = dest or repo
+    if os.path.exists(dest):
+        print(f"mgit: destination '{dest}' already exists"); sys.exit(1)
+    print(f"Cloning {url} -> {dest} ...")
+    req = urllib.request.Request(api_url, headers={"Accept": "application/vnd.github+json"})
+    with urllib.request.urlopen(req) as r:
+        with tarfile.open(fileobj=r, mode="r|gz") as tf:
+            members = list(tf.getmembers())
+            prefix = members[0].name.split("/")[0] + "/"
+            for m in members:
+                m.name = m.name[len(prefix):]
+                if m.name:
+                    tf.extract(m, dest)
+    print("Done.")
+
+def pull():
+    # Re-download over current directory
+    remote = subprocess.check_output(["git","remote","get-url","origin"],
+                                     stderr=subprocess.DEVNULL).decode().strip()
+    api_url, _ = gh_tarball_url(remote)
+    print(f"Pulling {remote} ...")
+    req = urllib.request.Request(api_url, headers={"Accept": "application/vnd.github+json"})
+    with urllib.request.urlopen(req) as r:
+        with tarfile.open(fileobj=r, mode="r|gz") as tf:
+            members = list(tf.getmembers())
+            prefix = members[0].name.split("/")[0] + "/"
+            for m in members:
+                m.name = m.name[len(prefix):]
+                if m.name:
+                    tf.extract(m, ".")
+    print("Done.")
+
+if len(sys.argv) < 2:
+    print("Usage: mgit clone <github-url> [dir]"); sys.exit(1)
+
+cmd = sys.argv[1]
+if cmd == "clone":
+    clone(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
+elif cmd == "pull":
+    pull()
+else:
+    print(f"mgit: unknown command '{cmd}'"); sys.exit(1)
+PYEOF
+chmod +x /usr/bin/mgit
+echo "mgit installed. Use: mgit clone https://github.com/owner/repo"
 
 echo ""
 echo "Setup complete!"

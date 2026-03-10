@@ -18,10 +18,14 @@ curl -sL https://raw.githubusercontent.com/rolohaun/licheervnano-setup/main/setu
 sh setup.sh "YourSSID" "YourPassword"
 
 # Then clone this repo and install the stats server
-git clone https://github.com/rolohaun/licheervnano-setup.git
+mgit clone https://github.com/rolohaun/licheervnano-setup
 cd licheervnano-setup
 sh install_server.sh
 ```
+
+> **Note:** `mgit` is a lightweight Python3-based clone/pull tool installed by `setup.sh`.
+> It uses the GitHub tarball API so no git binary is needed for cloning.
+> Use `mgit pull` inside a cloned directory to update it.
 
 ## Stats Web Server
 
