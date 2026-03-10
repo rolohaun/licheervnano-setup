@@ -14,7 +14,7 @@ Connect to the device over USB (SSH to `10.19.172.1` as `root`/`root`), then:
 
 ```sh
 # Download and run the setup script
-curl -sL https://raw.githubusercontent.com/rolohaun/licheervnano-setup/main/setup.sh -o setup.sh
+curl -sL https://raw.githubusercontent.com/rolohaun/licheervnano-setup/master/setup.sh -o setup.sh
 sh setup.sh "YourSSID" "YourPassword"
 
 # Then clone this repo and install the stats server
