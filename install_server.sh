@@ -11,7 +11,7 @@ cp "$REPO_DIR/server/S99statsserver" /etc/init.d/
 chmod +x /etc/init.d/S99statsserver
 
 echo "Starting stats server..."
-/etc/init.d/S99statsserver start
+/etc/init.d/S99statsserver restart 2>/dev/null || /etc/init.d/S99statsserver start
 
 IP=$(ip addr show wlan0 2>/dev/null | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)
 echo ""
