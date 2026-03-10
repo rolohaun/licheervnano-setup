@@ -143,7 +143,7 @@ def build_html():
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="3">
+  <meta http-equiv="refresh" content="60">
   <title>{os_info['hostname']} — Stats</title>
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -233,7 +233,7 @@ def build_html():
 </head>
 <body>
   <h1>&#127762; {os_info['hostname']}</h1>
-  <p class="subtitle">LicheeRV Nano &mdash; refreshes every 3s</p>
+  <p class="subtitle">LicheeRV Nano &mdash; refreshes every 60s</p>
 
   <div class="grid">
 
@@ -279,7 +279,7 @@ def build_html():
 
   </div>
 
-  <p class="refresh-note">Auto-refreshing every 3 seconds</p>
+  <p class="refresh-note">Auto-refreshing every 60 seconds</p>
 </body>
 </html>"""
 
