@@ -46,11 +46,19 @@ def get_memory():
     available = mem.get("MemAvailable", 0)
     used = total - available
     pct = (used / total * 100) if total else 0
+    swap_total = mem.get("SwapTotal", 0)
+    swap_free = mem.get("SwapFree", 0)
+    swap_used = swap_total - swap_free
+    swap_pct = (swap_used / swap_total * 100) if swap_total else 0
     return {
         "total_mb": total // 1024,
         "used_mb": used // 1024,
         "free_mb": available // 1024,
         "pct": round(pct, 1),
+        "swap_total_mb": swap_total // 1024,
+        "swap_used_mb": swap_used // 1024,
+        "swap_free_mb": swap_free // 1024,
+        "swap_pct": round(swap_pct, 1),
     }
 
 
@@ -263,6 +271,13 @@ def build_html():
         <span>Used: {mem['used_mb']} MB</span>
         <span>Free: {mem['free_mb']} MB</span>
         <span>Total: {mem['total_mb']} MB</span>
+      </div>
+      <div class="card-sub" style="margin-top:10px">Swap</div>
+      {bar(mem['swap_pct'], '#e67e22')}
+      <div class="info-row">
+        <span>Used: {mem['swap_used_mb']} MB</span>
+        <span>Free: {mem['swap_free_mb']} MB</span>
+        <span>Total: {mem['swap_total_mb']} MB</span>
       </div>
     </div>
 
