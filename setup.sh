@@ -54,60 +54,54 @@ fi
 echo "[3/3] Installing git-over-python helper (mgit)..."
 cat > /usr/bin/mgit << 'PYEOF'
 #!/usr/bin/env python3
-"""Minimal git clone/pull using GitHub tarball API. Usage: mgit clone <url> [dir]"""
-import sys, os, tarfile, urllib.request, shutil, subprocess
+"""Minimal clone/pull using GitHub tarball API. Usage: mgit clone <url> [dir]"""
+import sys, os, tarfile, urllib.request, io
 
-def gh_tarball_url(url):
-    # Convert https://github.com/owner/repo[.git] to tarball API URL
+def gh_api_url(url):
     url = url.rstrip("/").removesuffix(".git")
-    parts = url.rstrip("/").split("/")
+    parts = url.split("/")
     owner, repo = parts[-2], parts[-1]
-    return f"https://api.github.com/repos/{owner}/{repo}/tarball/main", repo
+    return f"https://api.github.com/repos/{owner}/{repo}/tarball/master", repo
+
+def download_and_extract(api_url, dest):
+    os.makedirs(dest, exist_ok=True)
+    req = urllib.request.Request(api_url, headers={"Accept": "application/vnd.github+json"})
+    print("Downloading...", flush=True)
+    with urllib.request.urlopen(req) as r:
+        data = io.BytesIO(r.read())
+    print("Extracting...", flush=True)
+    prefix = None
+    with tarfile.open(fileobj=data, mode="r:gz") as tf:
+        for m in tf.getmembers():
+            if prefix is None:
+                prefix = m.name.split("/")[0] + "/"
+            m.name = m.name[len(prefix):]
+            if m.name:
+                tf.extract(m, dest)
+    print("Done.")
 
 def clone(url, dest=None):
-    api_url, repo = gh_tarball_url(url)
+    api_url, repo = gh_api_url(url)
     dest = dest or repo
     if os.path.exists(dest):
-        print(f"mgit: destination '{dest}' already exists"); sys.exit(1)
+        print(f"mgit: '{dest}' already exists"); sys.exit(1)
     print(f"Cloning {url} -> {dest} ...")
-    req = urllib.request.Request(api_url, headers={"Accept": "application/vnd.github+json"})
-    with urllib.request.urlopen(req) as r:
-        with tarfile.open(fileobj=r, mode="r|gz") as tf:
-            members = list(tf.getmembers())
-            prefix = members[0].name.split("/")[0] + "/"
-            for m in members:
-                m.name = m.name[len(prefix):]
-                if m.name:
-                    tf.extract(m, dest)
-    print("Done.")
+    download_and_extract(api_url, dest)
 
-def pull():
-    # Re-download over current directory
-    remote = subprocess.check_output(["git","remote","get-url","origin"],
-                                     stderr=subprocess.DEVNULL).decode().strip()
-    api_url, _ = gh_tarball_url(remote)
-    print(f"Pulling {remote} ...")
-    req = urllib.request.Request(api_url, headers={"Accept": "application/vnd.github+json"})
-    with urllib.request.urlopen(req) as r:
-        with tarfile.open(fileobj=r, mode="r|gz") as tf:
-            members = list(tf.getmembers())
-            prefix = members[0].name.split("/")[0] + "/"
-            for m in members:
-                m.name = m.name[len(prefix):]
-                if m.name:
-                    tf.extract(m, ".")
-    print("Done.")
+def pull(url):
+    api_url, _ = gh_api_url(url)
+    print(f"Pulling latest ...")
+    download_and_extract(api_url, ".")
 
-if len(sys.argv) < 2:
-    print("Usage: mgit clone <github-url> [dir]"); sys.exit(1)
-
+if len(sys.argv) < 3:
+    print("Usage: mgit clone <github-url> [dir]\n       mgit pull  <github-url>"); sys.exit(1)
 cmd = sys.argv[1]
 if cmd == "clone":
     clone(sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else None)
 elif cmd == "pull":
-    pull()
+    pull(sys.argv[2])
 else:
-    print(f"mgit: unknown command '{cmd}'"); sys.exit(1)
+    print(f"mgit: unknown command"); sys.exit(1)
 PYEOF
 chmod +x /usr/bin/mgit
 echo "mgit installed. Use: mgit clone https://github.com/owner/repo"
