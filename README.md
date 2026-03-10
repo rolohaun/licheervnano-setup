@@ -25,7 +25,7 @@ sh install_server.sh
 
 > **Note:** `mgit` is a lightweight Python3-based clone/pull tool installed by `setup.sh`.
 > It uses the GitHub tarball API so no git binary is needed for cloning.
-> Use `mgit pull` inside a cloned directory to update it.
+> To update: `cd licheervnano-setup && mgit pull https://github.com/rolohaun/licheervnano-setup && sh install_server.sh`
 
 ## Stats Web Server
 
